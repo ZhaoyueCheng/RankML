@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Sequence
+from typing import Sequence, List
 from absl import logging
 from flax import linen as nn
 from flax.metrics import tensorboard
@@ -28,14 +28,14 @@ from layers import MLP, DenseArch, EmbeddingArch, InteractionArch, OverArch
 
 class DLRMV2(nn.Module):
     """DLRM V2 model."""
-    num_embeddings: int
+    vocab_sizes: List[int]
     embedding_dim: int
     bottom_mlp_dims: Sequence[int]
     top_mlp_dims: Sequence[int]
 
     def setup(self):
         self.dense_arch = DenseArch(self.bottom_mlp_dims)
-        self.embedding_arch = EmbeddingArch(self.num_embeddings, self.embedding_dim)
+        self.embedding_arch = EmbeddingArch(self.vocab_sizes, self.embedding_dim)
         self.interaction_arch = InteractionArch()
         self.over_arch = OverArch(self.top_mlp_dims)
 

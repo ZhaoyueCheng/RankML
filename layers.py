@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from typing import Sequence
+from typing import Sequence, List
 from absl import logging
 from flax import linen as nn
 from flax.metrics import tensorboard
@@ -45,22 +45,25 @@ class DenseArch(nn.Module):
         return MLP(self.layer_sizes)(dense_features)
 
 class EmbeddingArch(nn.Module):
-    """Embedding architecture."""
-    num_embeddings: int
+    """Embedding architecture"""
+    vocab_sizes: List[int]
     embedding_dim: int
 
     @nn.compact
     def __call__(self, embedding_ids):
-        embedding_table = self.param('embedding', nn.initializers.uniform(), (self.num_embeddings, self.embedding_dim))
-        embeddings = jnp.take(embedding_table, embedding_ids, axis=0)
-        return embeddings.reshape((embeddings.shape[0], -1))
+        embeddings = []
+        for i, vocab_size in enumerate(self.vocab_sizes):
+            embedding_table = self.param(f'embedding_{i}', nn.initializers.uniform(), (vocab_size, self.embedding_dim))
+            embedding = jnp.take(embedding_table, embedding_ids[:, i], axis=0)
+            embeddings.append(embedding)
+        return embeddings
 
 class InteractionArch(nn.Module):
     """Interaction architecture."""
 
     @nn.compact
-    def __call__(self, dense_output, embedding_output):
-        return jnp.concatenate([dense_output, embedding_output], axis=1)
+    def __call__(self, dense_output, embedding_outputs):
+        return jnp.concatenate([dense_output] + embedding_outputs, axis=1)
 
 class OverArch(nn.Module):
     """Over-architecture (top MLP)."""

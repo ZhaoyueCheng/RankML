@@ -27,3 +27,4 @@ def accuracy(logits, labels):
     predictions = jax.nn.sigmoid(logits) > 0.5
     accuracy = jnp.mean(predictions == labels)
     return accuracy
+

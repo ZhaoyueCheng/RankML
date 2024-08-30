@@ -25,8 +25,9 @@ def get_config_dlrm_v2():
     config.num_epochs = 10
     config.num_dense_features = 13
     config.num_embedding_features = 26
-    config.num_embedding_dimensions = (256) * config.num_dense_features
-    config.num_embeddings = 1000000
+    config.vocab_sizes = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+                          11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000,
+                          21000, 22000, 23000, 24000, 25000, 26000]  # 26 different vocab sizes
     config.embedding_dim = 32
     config.bottom_mlp_dims = (64, 32, 16)
     config.top_mlp_dims = (64, 32, 16)

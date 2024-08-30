@@ -82,7 +82,7 @@ def get_fake_datasets(config):
     rng = np.random.default_rng(42)
 
     dense_features = rng.random((num_samples, config.num_dense_features))
-    embedding_ids = rng.integers(0, config.num_embeddings, (num_samples, config.num_embedding_features))
+    embedding_ids = np.stack([rng.integers(0, vocab_size, num_samples) for vocab_size in config.vocab_sizes], axis=1)
     labels = rng.integers(0, 2, (num_samples,))
 
     split = int(0.8 * num_samples)
@@ -101,7 +101,7 @@ def get_fake_datasets(config):
 def create_train_state(rng, config):
     """Creates initial `TrainState`."""
     dlrm = DLRMV2(
-        num_embeddings=config.num_embeddings,
+        vocab_sizes=config.vocab_sizes,
         embedding_dim=config.embedding_dim,
         bottom_mlp_dims=config.bottom_mlp_dims,
         top_mlp_dims=config.top_mlp_dims
@@ -109,7 +109,7 @@ def create_train_state(rng, config):
     params = dlrm.init(
         rng, 
         jnp.ones([1, config.num_dense_features]), 
-        jnp.ones([1, config.num_embedding_features], dtype=jnp.int32)
+        jnp.ones([1, len(config.vocab_sizes)], dtype=jnp.int32)
     )['params']
     tx = optax.adam(config.learning_rate)
     return train_state.TrainState.create(apply_fn=dlrm.apply, params=params, tx=tx)
