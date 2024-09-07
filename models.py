@@ -30,17 +30,40 @@ class DLRMV2(nn.Module):
     """DLRM V2 model."""
     vocab_sizes: List[int]
     embedding_dim: int
-    bottom_mlp_dims: Sequence[int]
-    top_mlp_dims: Sequence[int]
+    bottom_mlp_dims: List[int]
+    top_mlp_dims: List[int]
 
-    def setup(self):
-        self.dense_arch = DenseArch(self.bottom_mlp_dims)
-        self.embedding_arch = EmbeddingArch(self.vocab_sizes, self.embedding_dim)
-        self.interaction_arch = InteractionArch()
-        self.over_arch = OverArch(self.top_mlp_dims)
-
+    @nn.compact
     def __call__(self, dense_features, embedding_ids):
-        dense_output = self.dense_arch(dense_features)
-        embedding_output = self.embedding_arch(embedding_ids)
-        interaction_output = self.interaction_arch(dense_output, embedding_output)
-        return self.over_arch(interaction_output).squeeze()
+        # Bottom MLP
+        x = self.bottom_mlp(dense_features)
+
+        # Embedding layer
+        embeddings = []
+        for i, vocab_size in enumerate(self.vocab_sizes):
+            embedding = nn.Embed(vocab_size, self.embedding_dim)(embedding_ids[str(i)])
+            embeddings.append(embedding)
+        
+        # Flatten and concatenate embeddings
+        embedding_output = jnp.concatenate([e.reshape(-1, self.embedding_dim) for e in embeddings], axis=1)
+
+        # Concatenate bottom MLP output and embedding output
+        concatenated = jnp.concatenate([x, embedding_output], axis=1)
+
+        # Top MLP
+        y = self.top_mlp(concatenated)
+
+        return y.squeeze(-1)
+
+    def bottom_mlp(self, x):
+        for dim in self.bottom_mlp_dims:
+            x = nn.Dense(dim)(x)
+            x = nn.relu(x)
+        return x
+
+    def top_mlp(self, x):
+        for dim in self.top_mlp_dims[:-1]:
+            x = nn.Dense(dim)(x)
+            x = nn.relu(x)
+        x = nn.Dense(self.top_mlp_dims[-1])(x)
+        return x
