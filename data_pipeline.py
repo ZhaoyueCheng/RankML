@@ -82,9 +82,3 @@ def train_input_fn(config: ml_collections.ConfigDict) -> tf.data.Dataset:
 def eval_input_fn(config: ml_collections.ConfigDict) -> tf.data.Dataset:
     """Returns dataset of batched eval examples."""
     return CriteoTsvReader(config, is_training=False)()
-
-# Example usage
-if __name__ == "__main__":
-    config = get_config()
-    train_reader = train_input_fn(config)
-    eval_reader = eval_input_fn(config)
