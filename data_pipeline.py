@@ -44,8 +44,8 @@ class CriteoTsvReader:
         if self._params.is_training:
             dataset = dataset.repeat()
         dataset = dataset.batch(self._params.global_batch_size, drop_remainder=True)
-        dataset = dataset.map(_parse_fn, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-        dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE)
+        dataset = dataset.map(_parse_fn, num_parallel_calls=1)
+        dataset = dataset.prefetch(10)
 
         return dataset
 
