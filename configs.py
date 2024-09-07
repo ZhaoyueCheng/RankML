@@ -48,5 +48,6 @@ def get_config():
 
     # Global configuration
     config.num_epochs = 10  # Make sure this is defined
+    config.steps_per_epoch = 100  # Adjust this value based on your dataset size and batch size
 
     return config

@@ -70,22 +70,19 @@ def create_train_state(rng, config):
 def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train_state.TrainState:
     """Execute model training and evaluation loop."""
     train_ds = train_input_fn(config)
-    test_ds = eval_input_fn(config)
-
-    summary_writer = tensorboard.SummaryWriter(workdir)
-    summary_writer.hparams(dict(config))
+    # test_ds = eval_input_fn(config)
 
     rng = jax.random.PRNGKey(0)
     rng, init_rng = jax.random.split(rng)
     state = create_train_state(init_rng, config)
-
+    print('start training')
     for epoch in range(1, config.num_epochs + 1):
         rng, input_rng = jax.random.split(rng)
         
         # Train loop
         epoch_loss = []
         epoch_accuracy = []
-        for features, labels in train_ds:
+        for features, labels in train_ds.take(config.steps_per_epoch):  # Add this line\
             dense_features = jnp.array(features['dense_features'])
             sparse_features = {k: jnp.array(v) for k, v in features['sparse_features'].items()}
             labels = jnp.array(labels)
@@ -97,40 +94,32 @@ def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train
         train_loss = jnp.mean(jnp.array(epoch_loss))
         train_accuracy = jnp.mean(jnp.array(epoch_accuracy))
 
-        # Evaluation loop
-        test_loss = []
-        test_accuracy = []
-        for features, labels in test_ds:
-            dense_features = jnp.array(features['dense_features'])
-            sparse_features = {k: jnp.array(v) for k, v in features['sparse_features'].items()}
-            labels = jnp.array(labels)
-            _, loss, accuracy = apply_model(state, dense_features, sparse_features, labels)
-            test_loss.append(loss)
-            test_accuracy.append(accuracy)
+        # # Evaluation loop
+        # test_loss = []
+        # test_accuracy = []
+        # for features, labels in test_ds:
+        #     dense_features = jnp.array(features['dense_features'])
+        #     sparse_features = {k: jnp.array(v) for k, v in features['sparse_features'].items()}
+        #     labels = jnp.array(labels)
+        #     _, loss, accuracy = apply_model(state, dense_features, sparse_features, labels)
+        #     test_loss.append(loss)
+        #     test_accuracy.append(accuracy)
         
-        test_loss = jnp.mean(jnp.array(test_loss))
-        test_accuracy = jnp.mean(jnp.array(test_accuracy))
+        # test_loss = jnp.mean(jnp.array(test_loss))
+        # test_accuracy = jnp.mean(jnp.array(test_accuracy))
 
-        logging.info(
-            'epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f, test_loss: %.4f, test_accuracy: %.2f'
-            % (epoch, train_loss, train_accuracy * 100, test_loss, test_accuracy * 100)
-        )
+        # logging.info(
+        #     'epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f, test_loss: %.4f, test_accuracy: %.2f'
+        #     % (epoch, train_loss, train_accuracy * 100, test_loss, test_accuracy * 100)
+        # )
         
-        print('epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f, test_loss: %.4f, test_accuracy: %.2f'
-            % (epoch, train_loss, train_accuracy * 100, test_loss, test_accuracy * 100))    
+        # print('epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f, test_loss: %.4f, test_accuracy: %.2f'
+        #     % (epoch, train_loss, train_accuracy * 100, test_loss, test_accuracy * 100))    
+        print('epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f'
+            % (epoch, train_loss, train_accuracy * 100))    
 
-        summary_writer.scalar('train_loss', train_loss, epoch)
-        summary_writer.scalar('train_accuracy', train_accuracy, epoch)
-        summary_writer.scalar('test_loss', test_loss, epoch)
-        summary_writer.scalar('test_accuracy', test_accuracy, epoch)
-
-    summary_writer.flush()
     return state
 
 if __name__ == "__main__":
     config = get_config()
-    # Enable synthetic data
-    config.use_synthetic_data = True
-    # Optionally, enable cached data
-    # config.use_cached_data = True
     train_and_evaluate(config, '/tmp/dlrm_v2')
