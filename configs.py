@@ -16,19 +16,38 @@ limitations under the License.
 
 import ml_collections
 
-def get_config_dlrm_v2():
+def get_config():
     """Get the default hyperparameter configuration."""
     config = ml_collections.ConfigDict()
 
-    config.learning_rate = 0.001
-    config.batch_size = 128
-    config.num_epochs = 10
-    config.num_dense_features = 13
-    config.num_embedding_features = 26
-    config.vocab_sizes = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
-                          11000, 12000, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000,
-                          21000, 22000, 23000, 24000, 25000, 26000]  # 26 different vocab sizes
-    config.embedding_dim = 32
-    config.bottom_mlp_dims = (64, 32, 16)
-    config.top_mlp_dims = (64, 32, 16)
+    # Model configuration
+    config.model = ml_collections.ConfigDict()
+    config.model.vocab_sizes = [1000, 1000, 1000]  # Example vocab sizes
+    config.model.num_dense_features = 13  # Example number of dense features
+    config.model.embedding_dim = 32  # Add this line
+    config.model.bottom_mlp_dims = [64, 32, 16]  # Add this line
+    config.model.top_mlp_dims = [64, 32, 1]  # Add this line
+    config.model.learning_rate = 0.001  # Add this line
+
+    # Data configuration
+    config.train_data = ml_collections.ConfigDict()
+    config.train_data.input_path = 'path/to/train/data/*.tsv'
+    config.train_data.global_batch_size = 1024
+    config.train_data.is_training = True
+    config.train_data.sharding = True
+    config.train_data.num_shards_per_host = 8
+    config.train_data.cycle_length = 8
+    config.train_data.use_synthetic_data = True
+
+    config.validation_data = ml_collections.ConfigDict()
+    config.validation_data.input_path = 'path/to/validation/data/*.tsv'
+    config.validation_data.global_batch_size = 1024
+    config.validation_data.is_training = False
+    config.validation_data.sharding = False
+    config.validation_data.use_synthetic_data = True
+
+    # Global configuration
+    config.num_epochs = 10  # Make sure this is defined
+    config.steps_per_epoch = 100  # Adjust this value based on your dataset size and batch size
+
     return config

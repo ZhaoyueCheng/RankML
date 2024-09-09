@@ -59,11 +59,57 @@ class EmbeddingArch(nn.Module):
         return embeddings
 
 class InteractionArch(nn.Module):
-    """Interaction architecture."""
+    """Base interaction architecture."""
 
     @nn.compact
     def __call__(self, dense_output, embedding_outputs):
         return jnp.concatenate([dense_output] + embedding_outputs, axis=1)
+
+class DotInteractionArch(InteractionArch):
+    """Dot product interaction architecture."""
+
+    @nn.compact
+    def __call__(self, dense_output, embedding_outputs):
+        base_output = jnp.concatenate([dense_output] + embedding_outputs, axis=1)
+        
+        # Combine dense and embedding outputs
+        combined_values = jnp.concatenate([dense_output.reshape(dense_output.shape[0], 1, -1)] + [e.reshape(e.shape[0], 1, -1) for e in embedding_outputs], axis=1)
+        
+        # Compute pairwise interactions
+        interactions = jnp.matmul(combined_values, combined_values.transpose((0, 2, 1)))
+        
+        # Get upper triangular indices
+        num_features = combined_values.shape[1]
+        triu_indices = jnp.triu_indices(num_features, num_features, k=1)
+        
+        # Extract upper triangular elements
+        interactions_flat = interactions[:, triu_indices[0], triu_indices[1]]
+        
+        return jnp.concatenate([dense_output, interactions_flat], axis=1)
+
+class LowRankCrossNetInteractionArch(InteractionArch):
+    """Low Rank Cross Network interaction architecture."""
+    num_layers: int
+    low_rank: int
+
+    @nn.compact
+    def __call__(self, dense_output, embedding_outputs):
+        base_output = jnp.concatenate([dense_output] + embedding_outputs, axis=1)
+        
+        x_0 = base_output
+        x_l = x_0
+        in_features = x_0.shape[-1]
+
+        for layer in range(self.num_layers):
+            W = self.param(f'W_{layer}', nn.initializers.glorot_uniform(), (in_features, self.low_rank))
+            V = self.param(f'V_{layer}', nn.initializers.glorot_uniform(), (self.low_rank, in_features))
+            b = self.param(f'b_{layer}', nn.initializers.zeros, (in_features,))
+
+            x_l_v = jnp.matmul(x_l, V.T)
+            x_l_w = jnp.matmul(x_l_v, W.T)
+            x_l = x_0 * (x_l_w + b) + x_l
+
+        return x_l
 
 class OverArch(nn.Module):
     """Over-architecture (top MLP)."""
