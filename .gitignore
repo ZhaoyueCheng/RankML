@@ -1,2 +1,4 @@
 __pycache__/*
 .ipynb_checkpoints/*
+tpu/flax/__pycache__/*
+*.pyc
