@@ -31,11 +31,16 @@ def accuracy(logits, labels):
 def auc(logits, labels):
     """Calculates the Area Under the ROC Curve (AUC)."""
     predictions = jax.nn.sigmoid(logits)
+    # Sort predictions and corresponding labels
     sorted_indices = jnp.argsort(predictions)
     sorted_labels = labels[sorted_indices]
+    
+    # Calculate true positive rate (TPR) and false positive rate (FPR)
     tpr = jnp.cumsum(sorted_labels) / jnp.sum(sorted_labels)
     fpr = jnp.cumsum(1 - sorted_labels) / jnp.sum(1 - sorted_labels)
-    return jnp.trapz(tpr, fpr)
+    
+    # Compute AUC using trapezoidal rule
+    return jnp.abs(jnp.trapezoid(tpr, fpr))
 
 def ndcg(logits, labels, k=10):
     """Calculates the Normalized Discounted Cumulative Gain (NDCG) at rank k."""
@@ -44,7 +49,7 @@ def ndcg(logits, labels, k=10):
     ideal_relevance = jnp.sort(labels)[::-1][:k]
     dcg = jnp.sum(relevance / jnp.log2(jnp.arange(2, len(relevance) + 2)))
     idcg = jnp.sum(ideal_relevance / jnp.log2(jnp.arange(2, len(ideal_relevance) + 2)))
-    return dcg / idcg if idcg > 0 else 0.0
+    return jnp.where(idcg > 0, dcg / idcg, 0.0)
 
 def precision_at_k(logits, labels, k=10):
     """Calculates the Precision at rank k."""
