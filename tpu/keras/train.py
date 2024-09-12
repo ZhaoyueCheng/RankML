@@ -1,42 +1,17 @@
-# Copyright 2024 Google LLC
-
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     https://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """
-Title: DLRM V2 implementation with Keras 3, Configurations, and Synthetic Data
-Author: [Your Name]
-Date created: 2023/09/12
-Last modified: 2023/09/12
-Description: Implementing the DLRM V2 model using Keras 3 with configurations and synthetic data.
-Accelerator: GPU
-"""
+Copyright 2024 Google LLC
 
-"""
-## Introduction
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This example demonstrates how to implement the Deep Learning Recommendation Model (DLRM) V2
-using Keras 3 with the JAX backend, leveraging configuration files and a data pipeline
-that generates synthetic data.
+     https://www.apache.org/licenses/LICENSE-2.0
 
-We will use the `config.py` file to define model and training configurations, and
-`data_pipeline.py` to create synthetic data for training and validation.
-
-"""
-
-"""
-## Setup
-
-Let's start by importing necessary modules, getting the configurations, and setting up the data pipeline.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 """
 
 import os
