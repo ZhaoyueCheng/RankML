@@ -138,8 +138,9 @@ for epoch in range(num_epochs):
         y_true = y_true.numpy()
         # Shard inputs
         sharded_inputs = [jax.device_put(x, data_sharding) for x in input_list]
-        sharded_y_true = jax.device_put(y_true, data_sharding)
-        loss_value, train_state = train_step(train_state, sharded_inputs, sharded_y_true)
+        # sharded_y_true = jax.device_put(y_true, data_sharding)
+        # loss_value, train_state = train_step(train_state, sharded_inputs, sharded_y_true)
+        loss_value, train_state = train_step(train_state, sharded_inputs, y_true)
     print(f"Epoch {epoch+1}, loss: {loss_value}")
 
 trainable_variables, non_trainable_variables, optimizer_variables = train_state
