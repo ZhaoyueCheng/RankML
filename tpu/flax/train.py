@@ -94,9 +94,7 @@ def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train
         # Compute average metrics for the epoch
         train_metrics = jax.tree_map(lambda *args: jnp.mean(jnp.array(args)), *epoch_metrics)
         
-        print('epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f, train_auc: %.4f, train_ndcg: %.4f'
-        % (epoch, train_metrics['loss'], train_metrics['accuracy'] * 100, train_metrics['auc'], train_metrics['ndcg@10']))
-
+        print('epoch:% 3d, train_loss: %.4f, train_accuracy: %.2f' % (epoch, train_metrics['loss'], train_metrics['accuracy'] * 100))
 
         # # Evaluation loop
         # test_loss = []
