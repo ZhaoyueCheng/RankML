@@ -106,7 +106,7 @@ def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train
                     'labels': jax.device_put(np.array(labels), data_sharding)
                 }
                 
-                jax.debug.visualize_array_sharding(batch['labels'])
+                # jax.debug.visualize_array_sharding(batch['labels'])
                 
                 state, metrics = train_step(state, batch)
                 train_metrics.append(metrics)
