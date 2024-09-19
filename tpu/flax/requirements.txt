@@ -1,6 +1,5 @@
 absl-py
 flax
-jax[tpu] --find-links https://storage.googleapis.com/jax-releases/libtpu_releases.html
 jaxlib
 ml_collections
 numpy
