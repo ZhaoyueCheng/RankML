@@ -82,7 +82,7 @@ def eval_step(state, batch):
 def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train_state.TrainState:
     devices = jax.devices()
     num_devices = len(devices)
-    mesh = Mesh(mesh_utils.create_device_mesh((num_devices,)), axis_names=('data',))
+    mesh = Mesh(mesh_utils.create_device_mesh((num_devices,)), axis_names=('batch',))
     
     rng = jax.random.PRNGKey(0)
     rng, init_rng = jax.random.split(rng)
@@ -93,16 +93,16 @@ def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train
         train_ds = train_input_fn(config)
         eval_ds = eval_input_fn(config)
         
-        data_sharding = NamedSharding(mesh, P('data',))
+        batch_sharding = NamedSharding(mesh, P('batch',))
         
         print('Start training')
         for epoch in range(1, config.num_epochs + 1):
             train_metrics = []
             for features, labels in train_ds.take(config.steps_per_epoch):
                 batch = {
-                    'dense_features': jax.device_put(np.array(features['dense_features']), data_sharding),
-                    'sparse_features': jax.tree.map(lambda x: jax.device_put(np.array(x), data_sharding), features['sparse_features']),
-                    'labels': jax.device_put(np.array(labels), data_sharding)
+                    'dense_features': jax.device_put(np.array(features['dense_features']), batch_sharding),
+                    'sparse_features': jax.tree.map(lambda x: jax.device_put(np.array(x), batch_sharding), features['sparse_features']),
+                    'labels': jax.device_put(np.array(labels), batch_sharding)
                 }
                 
                 # jax.debug.visualize_array_sharding(batch['labels'])
