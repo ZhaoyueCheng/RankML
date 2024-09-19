@@ -35,22 +35,17 @@ class DLRMV2(nn.Module):
 
     @nn.compact
     def __call__(self, dense_features, embedding_ids):
-        # Bottom MLP
         x = self.bottom_mlp(dense_features)
 
-        # Embedding layer
         embeddings = []
         for i, vocab_size in enumerate(self.vocab_sizes):
             embedding = nn.Embed(vocab_size, self.embedding_dim)(embedding_ids[str(i)])
             embeddings.append(embedding)
         
-        # Flatten and concatenate embeddings
         embedding_output = jnp.concatenate([e.reshape(-1, self.embedding_dim) for e in embeddings], axis=1)
 
-        # Concatenate bottom MLP output and embedding output
         concatenated = jnp.concatenate([x, embedding_output], axis=1)
 
-        # Top MLP
         y = self.top_mlp(concatenated)
 
         return y.squeeze(-1)

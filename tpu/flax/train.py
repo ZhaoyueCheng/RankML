@@ -80,10 +80,9 @@ def eval_step(state, batch):
     return metrics
 
 def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train_state.TrainState:
-    # Set up SPMD mesh
     devices = jax.devices()
     num_devices = len(devices)
-    mesh = Mesh(devices, axis_names=('data',))
+    mesh = Mesh(mesh_utils.create_device_mesh((num_devices,)), axis_names=('data',))
     
     rng = jax.random.PRNGKey(0)
     rng, init_rng = jax.random.split(rng)
@@ -110,11 +109,7 @@ def train_and_evaluate(config: ml_collections.ConfigDict, workdir: str) -> train
                 
                 state, metrics = train_step(state, batch)
                 train_metrics.append(metrics)
-                
-                # jax.debug.visualize_array_sharding(state.params['Dense_0'])
-                # jax.debug.visualize_array_sharding(state.params['Embed_0'])
 
-            
             train_metrics = jax.tree.map(lambda *args: jnp.mean(jnp.array(args)), *train_metrics)
             
             print(f'Epoch {epoch}:')

@@ -23,7 +23,6 @@ import keras
 
 
 def DLRM(config):
-    # Extract model parameters from the configuration
     num_dense_features = config.model.num_dense_features
     vocab_sizes = config.model.vocab_sizes
     embedding_dim = config.model.embedding_dim
@@ -32,21 +31,17 @@ def DLRM(config):
 
     num_sparse_features = len(vocab_sizes)
 
-    # Dense (numerical) input
     dense_input = keras.Input(shape=(num_dense_features,), name='dense_input')
 
-    # Sparse (categorical) inputs
     sparse_inputs = [
         keras.Input(shape=(), dtype='int32', name=f'sparse_input_{i}')
         for i in range(num_sparse_features)
     ]
 
-    # Bottom MLP for dense features
     x = dense_input
     for units in bottom_mlp_units:
         x = keras.layers.Dense(units, activation='relu')(x)
 
-    # Embedding layers for sparse features
     embeddings = []
     for i, vocab_size in enumerate(vocab_sizes):
         embedding = keras.layers.Embedding(
@@ -56,18 +51,14 @@ def DLRM(config):
         )(sparse_inputs[i])
         embeddings.append(embedding)
 
-    # Concatenate embeddings
     concatenated_embeddings = keras.layers.Concatenate()(embeddings)
 
-    # Feature Interaction between dense features and embeddings
     interaction = keras.layers.Concatenate()([x, concatenated_embeddings])
 
-    # Top MLP
     y = interaction
     for units in top_mlp_units[:-1]:
         y = keras.layers.Dense(units, activation='relu')(y)
     outputs = keras.layers.Dense(top_mlp_units[-1], activation='sigmoid')(y)
 
-    # Define the model
     model = keras.Model(inputs=[dense_input] + sparse_inputs, outputs=outputs)
     return model

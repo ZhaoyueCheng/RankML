@@ -63,7 +63,7 @@ class CriteoTsvReader:
     def _generate_synthetic_data(self) -> tf.data.Dataset:
         """Creates synthetic data based on the parameter batch size."""
         num_dense = self._model_config.num_dense_features
-        dataset_size = 10 * self._params.global_batch_size
+        dataset_size = 100 * self._params.global_batch_size
 
         dense_tensor = tf.random.uniform(shape=(dataset_size, num_dense), maxval=1.0, dtype=tf.float32)
         sparse_tensors = [
