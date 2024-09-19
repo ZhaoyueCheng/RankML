@@ -69,20 +69,14 @@ class DotInteractionArch(InteractionArch):
     """Dot product interaction architecture."""
 
     @nn.compact
-    def __call__(self, dense_output, embedding_outputs):
-        base_output = jnp.concatenate([dense_output] + embedding_outputs, axis=1)
-        
-        # Combine dense and embedding outputs
+    def __call__(self, dense_output, embedding_outputs):        
         combined_values = jnp.concatenate([dense_output.reshape(dense_output.shape[0], 1, -1)] + [e.reshape(e.shape[0], 1, -1) for e in embedding_outputs], axis=1)
         
-        # Compute pairwise interactions
         interactions = jnp.matmul(combined_values, combined_values.transpose((0, 2, 1)))
         
-        # Get upper triangular indices
         num_features = combined_values.shape[1]
         triu_indices = jnp.triu_indices(num_features, num_features, k=1)
         
-        # Extract upper triangular elements
         interactions_flat = interactions[:, triu_indices[0], triu_indices[1]]
         
         return jnp.concatenate([dense_output, interactions_flat], axis=1)
