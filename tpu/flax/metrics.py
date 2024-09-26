@@ -25,15 +25,16 @@ import ml_collections
 import numpy as np
 import optax
 
+
 def accuracy(logits, labels):
     """Calculates the accuracy of predictions."""
     predictions = jax.nn.sigmoid(logits) > 0.5
     return jnp.mean(predictions == labels)
 
+
 @jax.jit
 def compute_metrics(logits, labels):
     """Computes all metrics at once."""
     return {
-        'accuracy': accuracy(logits, labels),
+        "accuracy": accuracy(logits, labels),
     }
-

@@ -26,8 +26,10 @@ import numpy as np
 import optax
 from layers import MLP, DenseArch, EmbeddingArch, InteractionArch, OverArch
 
+
 class DLRMV2(nn.Module):
     """DLRM V2 model."""
+
     vocab_sizes: List[int]
     embedding_dim: int
     bottom_mlp_dims: List[int]
@@ -41,8 +43,19 @@ class DLRMV2(nn.Module):
         for i, vocab_size in enumerate(self.vocab_sizes):
             embedding = nn.Embed(vocab_size, self.embedding_dim)(embedding_ids[str(i)])
             embeddings.append(embedding)
-        
-        embedding_output = jnp.concatenate([e.reshape(-1, self.embedding_dim) for e in embeddings], axis=1)
+        if len(embeddings[0].shape) == 3:
+            # Multihot embedding has 3 dimensions: (batch_size, multihot_size, embedding_dim)
+            # TODO(qinyiyan): Find a proper way to do pooling.
+            pooled_embeddings = [
+                jnp.mean(embedding, axis=1) for embedding in embeddings
+            ]
+            embedding_output = jnp.concatenate(
+                [e.reshape(-1, self.embedding_dim) for e in pooled_embeddings], axis=1
+            )
+        else:
+            embedding_output = jnp.concatenate(
+                [e.reshape(-1, self.embedding_dim) for e in embeddings], axis=1
+            )
 
         concatenated = jnp.concatenate([x, embedding_output], axis=1)
 
