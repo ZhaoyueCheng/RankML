@@ -121,9 +121,7 @@ def train_and_evaluate(
                         np.array(features["dense_features"]), batch_sharding
                     ),
                     "sparse_features": jax.tree.map(
-                        lambda x: jax.device_put(
-                            np.array(x), batch_sharding
-                        ),
+                        lambda x: jax.device_put(np.array(x), batch_sharding),
                         features["sparse_features"],
                     ),
                     "labels": jax.device_put(np.array(labels), batch_sharding),
@@ -140,7 +138,7 @@ def train_and_evaluate(
 
             print(f"Epoch {epoch}:")
             print(
-                f'  Train loss: {train_metrics["loss"]:.4f}, accuracy: {train_metrics["accuracy"]:.4f}'
+                f'  Train loss: {train_metrics["loss"]:.4f}, accuracy: {train_metrics["accuracy"]:.4f}, auc: {train_metrics["auc"]: .4f}'
             )
 
     return state

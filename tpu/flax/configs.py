@@ -75,7 +75,7 @@ def get_criteo_config():
 
     # Data configuration
     config.train_data = ml_collections.ConfigDict()
-    config.train_data.input_path = 'gs://trillium-datasets/criteo/train/day_0/*00100*'
+    config.train_data.input_path = 'gs://rankml-datasets/criteo/train/day_0/*00100*'
     config.train_data.global_batch_size = 1024
     config.train_data.is_training = True
     config.train_data.sharding = True
@@ -85,7 +85,7 @@ def get_criteo_config():
     config.train_data.dataset_format = DatasetFormat.TFRECORD
 
     config.validation_data = ml_collections.ConfigDict()
-    config.validation_data.input_path = 'gs://trillium-datasets/criteo/eval/day_23/*00000*'
+    config.validation_data.input_path = 'gs://rankml-datasets/criteo/eval/day_23/*00000*'
     config.validation_data.global_batch_size = 1024
     config.validation_data.is_training = False
     config.validation_data.sharding = False
